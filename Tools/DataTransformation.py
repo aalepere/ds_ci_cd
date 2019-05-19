@@ -101,7 +101,7 @@ class DataTransformation:
                     )
                     self.test_data[col] = pd.cut(
                         self.test_data[col], bins=self.config_dict[col]["discretize"]["value"],
-                        labels=False, right=False
+                        labels=False, right=True, include_lowest=True
                     )
         else:
             for col in self.train_data.drop(columns=[self.target]):
@@ -118,5 +118,5 @@ class DataTransformation:
                     )
                     self.train_data[col] = pd.cut(
                         self.train_data[col], bins=self.config_dict[col]["discretize"]["value"],
-                        labels=False, right=False
+                        labels=False, right=True, include_lowest=True
                     )
