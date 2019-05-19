@@ -65,4 +65,10 @@ class DataInit:
         y = self.df[self.target]
         X = self.df.drop(columns=[self.target])
 
-        self.XTrain, self.XTest, self.yTrain, self.yTest = train_test_split(X, y, test_size=self.ratio, random_state=42)
+        XTrain, XTest, yTrain, yTest = train_test_split(X, y, test_size=self.ratio, random_state=42)
+
+        XTrain[target] = yTrain
+        self.train_data = XTrain
+
+        XTest[target] = yTest
+        self.test_data= XTest
