@@ -51,6 +51,8 @@ class DataTransformation:
 
         list_features = list(self.config_dict.keys())
         list_features.append(self.target)
+        self.test_data = self.test_data.copy()
+        self.train_data = self.train_data.copy()
         if test:
             self.test_data = self.test_data[list_features]
         else:
@@ -100,8 +102,11 @@ class DataTransformation:
                         else x
                     )
                     self.test_data[col] = pd.cut(
-                        self.test_data[col], bins=self.config_dict[col]["discretize"]["value"],
-                        labels=False, right=True, include_lowest=True
+                        self.test_data[col],
+                        bins=self.config_dict[col]["discretize"]["value"],
+                        labels=False,
+                        right=True,
+                        include_lowest=True,
                     )
         else:
             for col in self.train_data.drop(columns=[self.target]):
@@ -117,6 +122,9 @@ class DataTransformation:
                         else x
                     )
                     self.train_data[col] = pd.cut(
-                        self.train_data[col], bins=self.config_dict[col]["discretize"]["value"],
-                        labels=False, right=True, include_lowest=True
+                        self.train_data[col],
+                        bins=self.config_dict[col]["discretize"]["value"],
+                        labels=False,
+                        right=True,
+                        include_lowest=True,
                     )

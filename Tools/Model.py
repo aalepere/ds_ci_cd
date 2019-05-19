@@ -19,7 +19,15 @@ class Model:
         self.XTest = trans.test_data.drop(columns=[trans.target])
         self.yTest = trans.test_data[trans.target]
 
-        self.logisticRegr = LogisticRegression()
+        self.logisticRegr = LogisticRegression(solver="liblinear")
+
+    def run(self):
+        """
+        XXX
+        """
+
+        self.fit()
+        self.test()
 
     def fit(self):
         """
