@@ -1,4 +1,6 @@
+from sklearn.linear_model import LogisticRegression
 import pandas as pd
+from sklearn import metrics
 
 
 class Model:
@@ -6,7 +8,7 @@ class Model:
     XXX
     """
 
-    def __init__(self, tran):
+    def __init__(self, trans):
         """
         XXX
         """
@@ -17,16 +19,20 @@ class Model:
         self.XTest = trans.test_data.drop(columns=[trans.target])
         self.yTest = trans.test_data[trans.target]
 
-    def fit():
+        self.logisticRegr = LogisticRegression()
+
+    def fit(self):
         """
         XXX
         """
 
-        pass
+        self.logisticRegr.fit(self.XTrain, self.yTrain)
 
     def test(self):
         """
         XXX
         """
 
-        pass
+        predictions = self.logisticRegr.predict(self.XTest)
+        cm = metrics.confusion_matrix(self.yTest, predictions)
+        print(cm)
