@@ -67,8 +67,8 @@ class DataInit:
 
         XTrain, XTest, yTrain, yTest = train_test_split(X, y, test_size=self.ratio, random_state=42)
 
-        XTrain[target] = yTrain
+        XTrain[self.target] = yTrain
         self.train_data = XTrain
 
-        XTest[target] = yTest
-        self.test_data= XTest
+        XTest[self.target] = yTest
+        self.test_data = XTest

@@ -1,52 +1,122 @@
+import pandas as pd
 import json
+from scipy.stats.mstats import winsorize
+
 
 class DataTransformation:
     """
-    XXX
+    All transformation to be applied to the data before going into the model fitting
     """
 
-    def __init__(self, train_data, test_data):
+    def __init__(self, init):
         """
-        XXX
+        Initialize the class with train & test data
+        Load the config file created after analysis
         """
 
-        self.train_data = train_data
-        self.tes_data = test_data
+        self.train_data = init.train_data
+        self.test_data = init.test_data
+        self.target = init.target
 
         with open("Config/pipeline_instructions.json") as file:
             self.config_dict = json.load(file)
 
     def run(self):
         """
-        XXX
+        Run transformation for both train_data and test_data
         """
 
-        pass
+        self.transform()
+        self.transform(test=True)
 
     def transform(self, test=False):
         """
-        XXX
+        Apply all transformations in chain
         """
 
-        pass
+        if test:
+            self.keep_features(test)
+            self.replace_missings(test)
+            self.discretize(test)
+        else:
+            self.keep_features()
+            self.replace_missings()
+            self.winsorize()
+            self.discretize()
 
-    def replace_missings(self):
+    def keep_features(self, test=False):
         """
-        XXX
+        Keep the selected features going into the model
         """
 
-        pass
+        list_features = list(self.config_dict.keys())
+        list_features.append(self.target)
+        if test:
+            self.test_data = self.test_data[list_features]
+        else:
+            self.train_data = self.train_data[list_features]
+
+    def replace_missings(self, test=False):
+        """
+        Replace missing values with a default value
+        """
+
+        if test:
+            for col in self.test_data.drop(columns=[self.target]):
+                if self.config_dict[col]["replace_missings"]["apply"]:
+                    self.test_data[col] = self.test_data[col].fillna(self.config_dict[col]["replace_missings"]["value"])
+        else:
+            for col in self.train_data.drop(columns=[self.target]):
+                if self.config_dict[col]["replace_missings"]["apply"]:
+                    self.train_data[col] = self.train_data[col].fillna(
+                        self.config_dict[col]["replace_missings"]["value"]
+                    )
 
     def winsorize(self):
         """
-        XXX
+        Winsorize, to merge outliers. Only to be applied to the training data
         """
 
-        pass
+        for col in self.train_data.drop(columns=[self.target]):
+            if self.config_dict[col]["winsorize"]["apply"]:
+                self.train_data[col] = winsorize(self.train_data, limits=self.config_dict[col]["winsorize"]["value"])
 
-    def discretize(self):
+    def discretize(self, test=False):
         """
-        XXX
+        Discretize a continous feature into a discrete one
         """
 
-        pass
+        if test:
+            for col in self.test_data.drop(columns=[self.target]):
+                if self.config_dict[col]["discretize"]["apply"]:
+                    self.test_data[col] = self.test_data[col].apply(
+                        lambda x: self.config_dict[col]["discretize"]["value"][0]
+                        if x <= self.config_dict[col]["discretize"]["value"][0]
+                        else x
+                    )
+                    self.test_data[col] = self.test_data[col].apply(
+                        lambda x: self.config_dict[col]["discretize"]["value"][-1]
+                        if x >= self.config_dict[col]["discretize"]["value"][-1]
+                        else x
+                    )
+                    self.test_data[col] = pd.cut(
+                        self.test_data[col], bins=self.config_dict[col]["discretize"]["value"],
+                        labels=False, right=False
+                    )
+        else:
+            for col in self.train_data.drop(columns=[self.target]):
+                if self.config_dict[col]["discretize"]["apply"]:
+                    self.train_data[col] = self.train_data[col].apply(
+                        lambda x: self.config_dict[col]["discretize"]["value"][0]
+                        if x <= self.config_dict[col]["discretize"]["value"][0]
+                        else x
+                    )
+                    self.train_data[col] = self.train_data[col].apply(
+                        lambda x: self.config_dict[col]["discretize"]["value"][-1]
+                        if x >= self.config_dict[col]["discretize"]["value"][-1]
+                        else x
+                    )
+                    self.train_data[col] = pd.cut(
+                        self.train_data[col], bins=self.config_dict[col]["discretize"]["value"],
+                        labels=False, right=False
+                    )
