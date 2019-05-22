@@ -30,6 +30,8 @@ class DataInit:
         self.target = target
         self.ratio = ratio
 
+        # Load the mapping dictionary that will be used to replace categorical features into
+        # numerical values
         with open("Config/cat_to_num.json") as f:
             self.conf_dict = json.load(f)
 
@@ -51,7 +53,7 @@ class DataInit:
 
     def cat_to_num(self):
         """
-        Replace the categorical features to a numerical mapping
+        Replace the categorical features to numerical values based on the mapping provided
         """
 
         for col in self.conf_dict:
@@ -59,14 +61,19 @@ class DataInit:
 
     def split(self):
         """
-        Split the DataFrame into different elements
+        Random split of train and test of the inital dataset; based on the ration provided at the
+        instanciation
         """
 
+        # Define the target column we want to predict
         y = self.df[self.target]
         X = self.df.drop(columns=[self.target])
 
         XTrain, XTest, yTrain, yTest = train_test_split(X, y, test_size=self.ratio, random_state=42)
 
+        # Append back to targer column to both train and test; this is to ensure that after all the
+        # transformation applied we still have the correct target column in front of the
+        # transformed features
         XTrain = XTrain.copy()
         XTrain.loc[:, self.target] = yTrain
         self.train_data = XTrain

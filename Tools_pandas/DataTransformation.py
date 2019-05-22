@@ -18,6 +18,9 @@ class DataTransformation:
         self.test_data = init.test_data
         self.target = init.target
 
+        # Load list of transformations to be applied to each feature. This pipeline instruction were
+        # generated at the back of the single feature analysis performed in the jupyter notebook.
+        # Please refer to the analysis folder
         with open("Config/pipeline_instructions.json") as file:
             self.config_dict = json.load(file)
 
@@ -64,7 +67,9 @@ class DataTransformation:
         """
 
         if test:
+            # for each feature in the test set
             for col in self.test_data.drop(columns=[self.target]):
+                # check if the replace missing transformation needs to be applied
                 if self.config_dict[col]["replace_missings"]["apply"]:
                     self.test_data[col] = self.test_data[col].fillna(self.config_dict[col]["replace_missings"]["value"])
         else:
@@ -91,6 +96,8 @@ class DataTransformation:
         if test:
             for col in self.test_data.drop(columns=[self.target]):
                 if self.config_dict[col]["discretize"]["apply"]:
+                    # As the discretization bins were created on the training dataset, we check if
+                    # any value is outside of the bin edges and we replace with the edge value
                     self.test_data[col] = self.test_data[col].apply(
                         lambda x: self.config_dict[col]["discretize"]["value"][0]
                         if x <= self.config_dict[col]["discretize"]["value"][0]

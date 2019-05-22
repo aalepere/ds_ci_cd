@@ -5,12 +5,13 @@ from sklearn import metrics
 
 class Model:
     """
-    XXX
+    This class instantiate a logic regression with the transformed data sets; to then fit and make
+    predictions with the test data
     """
 
     def __init__(self, trans):
         """
-        XXX
+        Iniatialize the dataset used and the algorithm to be used
         """
 
         self.XTrain = trans.train_data.drop(columns=[trans.target])
@@ -23,7 +24,7 @@ class Model:
 
     def run(self):
         """
-        XXX
+        run in sequence, fit and then test
         """
 
         self.fit()
@@ -31,14 +32,14 @@ class Model:
 
     def fit(self):
         """
-        XXX
+        fit the logistic regression
         """
 
         self.logisticRegr.fit(self.XTrain, self.yTrain)
 
     def test(self):
         """
-        XXX
+        predict agains test set and retrieves confusion matrix
         """
 
         predictions = self.logisticRegr.predict(self.XTest)
