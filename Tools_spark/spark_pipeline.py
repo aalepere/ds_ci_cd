@@ -1,6 +1,7 @@
 from pyspark import SparkContext
+from pyspark.ml.feature import (Imputer, QuantileDiscretizer, StandardScaler,
+                                StringIndexer)
 from pyspark.sql import SQLContext
-from pyspark.ml.feature import StringIndexer, Imputer, QuantileDiscretizer, StandardScaler
 from pyspark.sql.functions import expr
 
 sc = SparkContext("local", "Spark Pipeline")

@@ -1,4 +1,5 @@
 import json
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -12,9 +13,10 @@ class DataInit:
         - yTrain: target of the training
         - XTest: data that will be used for testing
         - yTest: target of the test
+    - prod flag; it to apply specific steps once model has been promoted to production environment
     """
 
-    def __init__(self, source, sep, target, ratio):
+    def __init__(self, source, target, ratio, sep=None, prod=False):
         """
         Initialize the class with all the vars required for data initialization:
         - source: file path + file name of the source
@@ -22,6 +24,7 @@ class DataInit:
         - target: the name of the column in the source file that it is the target of the
           classification
         - ratio: ratio of the split between train and test
+        - prod: to be used only for production
         - Load config file for replacing categorial features
         """
 
@@ -29,6 +32,8 @@ class DataInit:
         self.sep = sep
         self.target = target
         self.ratio = ratio
+        self.prod = prod
+        self.train_data = None
 
         # Load the mapping dictionary that will be used to replace categorical features into
         # numerical values
@@ -42,14 +47,21 @@ class DataInit:
 
         self.load_file()
         self.cat_to_num()
-        self.split()
+        if not self.prod:
+            self.split()  # Split between train and test only required during dev phase
+        if self.prod:
+            self.test_data = self.df
 
     def load_file(self):
         """
         Load the source file into a DataFrame
         """
 
-        self.df = pd.read_csv(self.source, sep=self.sep)
+        if self.prod:
+            # For prod use dictionary derived from the body of the POST Request
+            self.df = pd.DataFrame([self.source])
+        else:
+            self.df = pd.read_csv(self.source, sep=self.sep)
 
     def cat_to_num(self):
         """

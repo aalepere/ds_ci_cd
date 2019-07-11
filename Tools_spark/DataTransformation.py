@@ -1,5 +1,6 @@
-import math
 import json
+import math
+
 from pyspark.ml.feature import Bucketizer, Imputer
 from pyspark.sql.functions import expr
 
@@ -53,7 +54,7 @@ class DataTransformation:
         Keep the selected features going into the model
         """
 
-        list_features = ['Age','Sex_indexed','Fare']
+        list_features = ["Age", "Sex_indexed", "Fare"]
         list_features.append(self.target)
         if test:
             self.test_data = self.test_data.select(*list_features)
@@ -105,11 +106,7 @@ class DataTransformation:
                 splits = self.config_dict[col]["discretize"]["value"]
                 splits = [-math.inf] + splits
                 splits = splits + [math.inf]
-                bucketizer = Bucketizer(
-                    splits=splits,
-                    inputCol=col,
-                    outputCol="{}_discretized".format(col),
-                )
+                bucketizer = Bucketizer(splits=splits, inputCol=col, outputCol="{}_discretized".format(col))
                 if test:
                     self.test_data = bucketizer.transform(self.test_data)
                 else:

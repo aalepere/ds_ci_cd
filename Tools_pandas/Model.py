@@ -1,6 +1,8 @@
-from sklearn.linear_model import LogisticRegression
+import pickle
+
 import pandas as pd
 from sklearn import metrics
+from sklearn.linear_model import LogisticRegression
 
 
 class Model:
@@ -29,6 +31,8 @@ class Model:
 
         self.fit()
         self.test()
+        with open('model.p','wb') as f:
+            pickle.dump(obj=self.logisticRegr, file=f)
 
     def fit(self):
         """

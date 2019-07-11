@@ -1,5 +1,6 @@
-import pandas as pd
 import json
+
+import pandas as pd
 from scipy.stats.mstats import winsorize
 
 
@@ -8,7 +9,7 @@ class DataTransformation:
     All transformation to be applied to the data before going into the model fitting
     """
 
-    def __init__(self, init):
+    def __init__(self, init, prod=False):
         """
         Initialize the class with train & test data
         Load the config file created after analysis
@@ -17,6 +18,7 @@ class DataTransformation:
         self.train_data = init.train_data
         self.test_data = init.test_data
         self.target = init.target
+        self.prod = prod
 
         # Load list of transformations to be applied to each feature. This pipeline instruction were
         # generated at the back of the single feature analysis performed in the jupyter notebook.
@@ -29,7 +31,9 @@ class DataTransformation:
         Run transformation for both train_data and test_data
         """
 
-        self.transform()
+        # For prod we treat input data like if they were part of the test sample
+        if not self.prod:
+            self.transform()
         self.transform(test=True)
 
     def transform(self, test=False):
@@ -53,12 +57,13 @@ class DataTransformation:
         """
 
         list_features = list(self.config_dict.keys())
-        list_features.append(self.target)
-        self.test_data = self.test_data.copy()
-        self.train_data = self.train_data.copy()
+        if not self.prod:
+            list_features.append(self.target)
         if test:
+            self.test_data = self.test_data.copy()
             self.test_data = self.test_data[list_features]
         else:
+            self.train_data = self.train_data.copy()
             self.train_data = self.train_data[list_features]
 
     def replace_missings(self, test=False):
@@ -67,11 +72,22 @@ class DataTransformation:
         """
 
         if test:
-            # for each feature in the test set
-            for col in self.test_data.drop(columns=[self.target]):
-                # check if the replace missing transformation needs to be applied
-                if self.config_dict[col]["replace_missings"]["apply"]:
-                    self.test_data[col] = self.test_data[col].fillna(self.config_dict[col]["replace_missings"]["value"])
+            if not self.prod:
+                # for each feature in the test set
+                for col in self.test_data.drop(columns=[self.target]):
+                    # check if the replace missing transformation needs to be applied
+                    if self.config_dict[col]["replace_missings"]["apply"]:
+                        self.test_data[col] = self.test_data[col].fillna(
+                            self.config_dict[col]["replace_missings"]["value"]
+                        )
+            if self.prod:
+                # for each feature in the request body
+                for col in self.test_data:
+                    # check if the replace missing transformation needs to be applied
+                    if self.config_dict[col]["replace_missings"]["apply"]:
+                        self.test_data[col] = self.test_data[col].fillna(
+                            self.config_dict[col]["replace_missings"]["value"]
+                        )
         else:
             for col in self.train_data.drop(columns=[self.target]):
                 if self.config_dict[col]["replace_missings"]["apply"]:
@@ -94,27 +110,50 @@ class DataTransformation:
         """
 
         if test:
-            for col in self.test_data.drop(columns=[self.target]):
-                if self.config_dict[col]["discretize"]["apply"]:
-                    # As the discretization bins were created on the training dataset, we check if
-                    # any value is outside of the bin edges and we replace with the edge value
-                    self.test_data[col] = self.test_data[col].apply(
-                        lambda x: self.config_dict[col]["discretize"]["value"][0]
-                        if x <= self.config_dict[col]["discretize"]["value"][0]
-                        else x
-                    )
-                    self.test_data[col] = self.test_data[col].apply(
-                        lambda x: self.config_dict[col]["discretize"]["value"][-1]
-                        if x >= self.config_dict[col]["discretize"]["value"][-1]
-                        else x
-                    )
-                    self.test_data[col] = pd.cut(
-                        self.test_data[col],
-                        bins=self.config_dict[col]["discretize"]["value"],
-                        labels=False,
-                        right=True,
-                        include_lowest=True,
-                    )
+            if not self.prod:
+                for col in self.test_data.drop(columns=[self.target]):
+                    if self.config_dict[col]["discretize"]["apply"]:
+                        # As the discretization bins were created on the training dataset, we check if
+                        # any value is outside of the bin edges and we replace with the edge value
+                        self.test_data[col] = self.test_data[col].apply(
+                            lambda x: self.config_dict[col]["discretize"]["value"][0]
+                            if x <= self.config_dict[col]["discretize"]["value"][0]
+                            else x
+                        )
+                        self.test_data[col] = self.test_data[col].apply(
+                            lambda x: self.config_dict[col]["discretize"]["value"][-1]
+                            if x >= self.config_dict[col]["discretize"]["value"][-1]
+                            else x
+                        )
+                        self.test_data[col] = pd.cut(
+                            self.test_data[col],
+                            bins=self.config_dict[col]["discretize"]["value"],
+                            labels=False,
+                            right=True,
+                            include_lowest=True,
+                        )
+            if self.prod:
+                for col in self.test_data:
+                    if self.config_dict[col]["discretize"]["apply"]:
+                        # As the discretization bins were created on the training dataset, we check if
+                        # any value is outside of the bin edges and we replace with the edge value
+                        self.test_data[col] = self.test_data[col].apply(
+                            lambda x: self.config_dict[col]["discretize"]["value"][0]
+                            if x <= self.config_dict[col]["discretize"]["value"][0]
+                            else x
+                        )
+                        self.test_data[col] = self.test_data[col].apply(
+                            lambda x: self.config_dict[col]["discretize"]["value"][-1]
+                            if x >= self.config_dict[col]["discretize"]["value"][-1]
+                            else x
+                        )
+                        self.test_data[col] = pd.cut(
+                            self.test_data[col],
+                            bins=self.config_dict[col]["discretize"]["value"],
+                            labels=False,
+                            right=True,
+                            include_lowest=True,
+                        )
         else:
             for col in self.train_data.drop(columns=[self.target]):
                 if self.config_dict[col]["discretize"]["apply"]:
