@@ -23,7 +23,7 @@ class DataTransformation:
         # Load list of transformations to be applied to each feature. This pipeline instruction were
         # generated at the back of the single feature analysis performed in the jupyter notebook.
         # Please refer to the analysis folder
-        with open("Config/pipeline_instructions.json") as file:
+        with open("../Config/pipeline_instructions.json") as file:
             self.config_dict = json.load(file)
 
     def run(self):

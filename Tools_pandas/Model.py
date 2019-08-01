@@ -31,7 +31,7 @@ class Model:
 
         self.fit()
         self.test()
-        with open('model.p','wb') as f:
+        with open("../models/model.p", "wb") as f:
             pickle.dump(obj=self.logisticRegr, file=f)
 
     def fit(self):
@@ -43,9 +43,12 @@ class Model:
 
     def test(self):
         """
-        predict agains test set and retrieves confusion matrix
+        predict against test set and retrieves confusion matrix
+        and gini
         """
 
         predictions = self.logisticRegr.predict(self.XTest)
         cm = metrics.confusion_matrix(self.yTest, predictions)
         print(cm)
+        fpr, tpr, thresholds = metrics.roc_curve(self.yTest, predictions)
+        print("Gini test: ", 2 * metrics.auc(fpr, tpr) - 1)

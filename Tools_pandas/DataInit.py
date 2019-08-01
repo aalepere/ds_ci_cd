@@ -37,7 +37,7 @@ class DataInit:
 
         # Load the mapping dictionary that will be used to replace categorical features into
         # numerical values
-        with open("Config/cat_to_num.json") as f:
+        with open("../Config/cat_to_num.json") as f:
             self.conf_dict = json.load(f)
 
     def run(self):
